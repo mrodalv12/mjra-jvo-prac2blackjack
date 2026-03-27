@@ -230,7 +230,7 @@ public class Deck : MonoBehaviour
     }
     //------------------------------------------------------//
 
-    private void UpdatePointsUI()
+        private void UpdatePointsUI()
     //actualizar los puntos de la carta de tu mano
     {
         CardHand dealerHand = dealer.GetComponent<CardHand>();
@@ -241,7 +241,33 @@ public class Deck : MonoBehaviour
 
         if (dealerPointsText != null)
         {
-            dealerPointsText.text = "Puntos: " + dealerHand.points.ToString();
+            int visiblePoints = 0;
+
+            //comprobamos si hay cartas
+            if (dealerHand.cards.Count > 0)
+            {
+                //miramos si la primera carta esta volteada
+                CardModel firstCard = dealerHand.cards[0].GetComponent<CardModel>();
+                SpriteRenderer sr = dealerHand.cards[0].GetComponent<SpriteRenderer>();
+
+                bool hidden = sr.sprite == firstCard.cardBack;
+
+                //si esta oculta, no contamos la primera carta
+                if (hidden)
+                {
+                    for (int i = 1; i < dealerHand.cards.Count; i++)
+                    {
+                        visiblePoints += dealerHand.cards[i].GetComponent<CardModel>().value;
+                    }
+                }
+                else
+                {
+                    //si no esta oculta, usamos los puntos normales
+                    visiblePoints = dealerHand.points;
+                }
+            }
+
+            dealerPointsText.text = "Puntos: " + visiblePoints.ToString();
         }
     }
     //------------------------------------------------------//
