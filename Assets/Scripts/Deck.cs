@@ -9,6 +9,10 @@ public class Deck : MonoBehaviour
     public GameObject dealer; //el croupier ---> esta en la clase cardhand
     public GameObject player; //el jugador ----> esta en la clase cardhand
 
+    public Image resultImage; //imagen que se muestra al ganar o perder
+    public Sprite winSprite; //sprite cuando ganas
+    public Sprite loseSprite; //sprite cuando pierdes
+
     //------botones --------
 
     public Button hitButton; //bton para pedir cartas
@@ -49,6 +53,9 @@ public class Deck : MonoBehaviour
 
     private void Start()
     {
+        if (resultImage != null)
+            resultImage.gameObject.SetActive(false);
+
         UpdateCreditUI(); //actualiza el credito al inicio de una partida
         UpdateBetFromDropdown(); //aqui leemos la apuesta realizada
         ShuffleCards(); //barajea las cartas
@@ -102,6 +109,9 @@ public class Deck : MonoBehaviour
 
         if (betDropdown != null)
             betDropdown.interactable = false;
+        
+        if (resultImage != null)
+            resultImage.gameObject.SetActive(false);
 
         //se reparten dos cartas al jugador y al coupier
         for (int i = 0; i < 2; i++)
@@ -231,7 +241,7 @@ public class Deck : MonoBehaviour
     }
     //------------------------------------------------------//
 
-        private void UpdatePointsUI()
+    private void UpdatePointsUI()
     //actualizar los puntos de la carta de tu mano
     {
         CardHand dealerHand = dealer.GetComponent<CardHand>();
@@ -305,6 +315,12 @@ public class Deck : MonoBehaviour
         {
             credit -= currentBet;
 
+            if (resultImage != null)
+            {
+                resultImage.sprite = loseSprite;
+                resultImage.gameObject.SetActive(true);
+            }
+
             if (credit < 0)
                 finalMessage.text = "QUEDASTE EN DEUDA";
             else
@@ -336,6 +352,11 @@ public class Deck : MonoBehaviour
         {
             finalMessage.text = "PLAYER WIN";
             credit += currentBet;
+            if (resultImage != null)
+            {
+                resultImage.sprite = winSprite;
+                resultImage.gameObject.SetActive(true);
+            }
         }
         else if (dealerPoints > playerPoints)
         {
@@ -345,6 +366,12 @@ public class Deck : MonoBehaviour
                 finalMessage.text = "PERDISTE MAS CREDITOS DE LOS QUE TENIAS";
             else
                 finalMessage.text = "PLAYER LOSE";
+
+            if (resultImage != null)
+            {
+                resultImage.sprite = loseSprite;
+                resultImage.gameObject.SetActive(true);
+            }
         }
         else if (dealerPoints < playerPoints)
         {
@@ -355,6 +382,7 @@ public class Deck : MonoBehaviour
         {
             finalMessage.text = "DRAW";
         }
+
 
         EndRound();
     }
