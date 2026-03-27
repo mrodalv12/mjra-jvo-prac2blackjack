@@ -9,16 +9,23 @@ public class Deck : MonoBehaviour
     public GameObject dealer; //el croupier ---> esta en la clase cardhand
     public GameObject player; //el jugador ----> esta en la clase cardhand
 
+    public Image resultImage; //imagen que se muestra al ganar o perder
+    public Sprite winSprite; //sprite cuando ganas
+    public Sprite loseSprite; //sprite cuando pierdes
+
     //------botones --------
 
     public Button hitButton; //bton para pedir cartas
     public Button stickButton; //boton para quedarte con las que tienes, luego es el turno del croupier
     public Button playAgainButton; //boton para jugar otra partida
+    public Button resetGameButton; //boton para reiniciar
 
     //------mensajes del juego ------
 
     public TMP_Text finalMessage; //si ganaste o perdiste
     public TMP_Text probMessage; //muestra las probabilidades
+
+    public TMP_Text statsText; //texto donde mostramos win/lose
 
     //------mensaje para la apuesta del player------
 
@@ -38,6 +45,8 @@ public class Deck : MonoBehaviour
     int credit = 1000; //credito - fichas
     int currentBet = 10; //por default tiene la apuesta mas baja
     bool roundFinished = false;
+    int wins = 0; //contador de victorias
+    int losses = 0; //contador de derrotas
 
     //-------------------------------------------------------------------------------------------//
 
@@ -48,6 +57,10 @@ public class Deck : MonoBehaviour
 
     private void Start()
     {
+        if (resultImage != null)
+            resultImage.gameObject.SetActive(false);
+
+        UpdateStatsUI();
         UpdateCreditUI(); //actualiza el credito al inicio de una partida
         UpdateBetFromDropdown(); //aqui leemos la apuesta realizada
         ShuffleCards(); //barajea las cartas
@@ -101,6 +114,9 @@ public class Deck : MonoBehaviour
 
         if (betDropdown != null)
             betDropdown.interactable = false;
+        
+        if (resultImage != null)
+            resultImage.gameObject.SetActive(false);
 
         //se reparten dos cartas al jugador y al coupier
         for (int i = 0; i < 2; i++)
@@ -126,12 +142,24 @@ public class Deck : MonoBehaviour
             if (playerPoints == 21 && dealerPoints == 21)
             {
                 finalMessage.text = "DRAW";
+                if (resultImage != null)
+                {
+                    resultImage.sprite =loseSprite;
+                    resultImage.gameObject.SetActive(true);
+                }
             }
             //si nosotros (el jugador) tiene 21 y ganamos
             else if (playerPoints == 21)
             {
                 finalMessage.text = "PLAYER BLACKJACK!";
                 credit += currentBet;
+                wins++;
+                UpdateStatsUI();
+                if (resultImage != null)
+                {
+                    resultImage.sprite =winSprite;
+                    resultImage.gameObject.SetActive(true);
+                }
             }
             //si el coupier tiene 21  y gana
             else
@@ -139,9 +167,28 @@ public class Deck : MonoBehaviour
                 credit -= currentBet;
 
                 if (credit < 0)
+                {
                     finalMessage.text = "PERDISTE MAS CREDITOS DE LOS QUE TENIAS";
+                    if (resultImage != null)
+                    {
+                        resultImage.sprite =loseSprite;
+                        resultImage.gameObject.SetActive(true);
+                    }
+                } 
                 else
+                {
                     finalMessage.text = "DEALER BLACKJACK!";
+                    losses++;
+                    UpdateStatsUI();
+                    if (resultImage != null)
+                    {
+                        resultImage.sprite =loseSprite;
+                        resultImage.gameObject.SetActive(true);
+                        
+                    }
+                }
+                    
+
             }
 
             EndRound(); //se acaba la partida apenas empezo
@@ -241,7 +288,33 @@ public class Deck : MonoBehaviour
 
         if (dealerPointsText != null)
         {
-            dealerPointsText.text = "Puntos: " + dealerHand.points.ToString();
+            int visiblePoints = 0;
+
+            //comprobamos si hay cartas
+            if (dealerHand.cards.Count > 0)
+            {
+                //miramos si la primera carta esta volteada
+                CardModel firstCard = dealerHand.cards[0].GetComponent<CardModel>();
+                SpriteRenderer sr = dealerHand.cards[0].GetComponent<SpriteRenderer>();
+
+                bool hidden = sr.sprite == firstCard.cardBack;
+
+                //si esta oculta, no contamos la primera carta
+                if (hidden)
+                {
+                    for (int i = 1; i < dealerHand.cards.Count; i++)
+                    {
+                        visiblePoints += dealerHand.cards[i].GetComponent<CardModel>().value;
+                    }
+                }
+                else
+                {
+                    //si no esta oculta, usamos los puntos normales
+                    visiblePoints = dealerHand.points;
+                }
+            }
+
+            dealerPointsText.text = "Puntos: " + visiblePoints.ToString();
         }
     }
     //------------------------------------------------------//
@@ -278,10 +351,18 @@ public class Deck : MonoBehaviour
         {
             credit -= currentBet;
 
+            if (resultImage != null)
+            {
+                resultImage.sprite = loseSprite;
+                resultImage.gameObject.SetActive(true);
+            }
+
             if (credit < 0)
                 finalMessage.text = "QUEDASTE EN DEUDA";
             else
                 finalMessage.text = "PLAYER LOSE";
+                losses++;
+                UpdateStatsUI();
 
             EndRound();
         }
@@ -309,6 +390,13 @@ public class Deck : MonoBehaviour
         {
             finalMessage.text = "PLAYER WIN";
             credit += currentBet;
+            wins++;
+            UpdateStatsUI();
+            if (resultImage != null)
+            {
+                resultImage.sprite = winSprite;
+                resultImage.gameObject.SetActive(true);
+            }
         }
         else if (dealerPoints > playerPoints)
         {
@@ -318,16 +406,39 @@ public class Deck : MonoBehaviour
                 finalMessage.text = "PERDISTE MAS CREDITOS DE LOS QUE TENIAS";
             else
                 finalMessage.text = "PLAYER LOSE";
+                losses++;
+                UpdateStatsUI();
+
+            if (resultImage != null)
+            {
+                resultImage.sprite = loseSprite;
+                resultImage.gameObject.SetActive(true);
+            }
         }
         else if (dealerPoints < playerPoints)
         {
             finalMessage.text = "PLAYER WIN";
             credit += currentBet;
+            wins++;
+            UpdateStatsUI();
+
+            if (resultImage != null)
+                {
+                    resultImage.sprite =winSprite;
+                    resultImage.gameObject.SetActive(true);
+                }
         }
         else
         {
             finalMessage.text = "DRAW";
+
+            if (resultImage != null)
+                {
+                    resultImage.sprite =loseSprite;
+                    resultImage.gameObject.SetActive(true);
+                }
         }
+
 
         EndRound();
     }
@@ -397,4 +508,61 @@ public class Deck : MonoBehaviour
         }
     }
     //------------------------------------------------------//
+    public void ResetGame()
+    //reinicia todo el juego desde cero y creditos == 1000
+    {
+        //se reinician los creditos
+        credit = 1000;
+
+        //reiniciar variables
+        roundFinished = false;
+        cardIndex = 0;
+
+        //reactivar botones
+        hitButton.interactable = true;
+        stickButton.interactable = true;
+
+        //reset ganadas y perdidas
+        wins = 0;
+        losses = 0;
+        UpdateStatsUI();
+
+        //las manos de nuevo con 0 cartas
+        player.GetComponent<CardHand>().Clear();
+        dealer.GetComponent<CardHand>().Clear();
+
+        //reiniciamos textos
+        if (dealerPointsText != null)
+            dealerPointsText.text = "Puntos: 0";
+
+        if (playerPointsText != null)
+            playerPointsText.text = "Puntos: 0";
+
+        if (finalMessage != null)
+            finalMessage.text = "";
+
+        if (probMessage != null)
+            probMessage.text = "";
+
+        //se actualiza el credito en pantalla
+        UpdateCreditUI();
+
+        //y podemos elegir la apuesta de nuevo
+        if (betDropdown != null)
+            betDropdown.interactable = true;
+
+        //barajamos y empezamos de nuevo
+        ShuffleCards();
+        UpdateBetFromDropdown();
+        StartGame();
+    }
+    //------------------------------------------------------//
+    private void UpdateStatsUI()
+    //actualiza el contador de victorias y derrotas
+    {
+        if (statsText != null)
+            statsText.text = "Wins: " + wins + " | Losses: " + losses;
+    }
+    //------------------------------------------------------//
+
 }
