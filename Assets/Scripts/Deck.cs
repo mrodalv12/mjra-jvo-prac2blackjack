@@ -25,6 +25,8 @@ public class Deck : MonoBehaviour
     public TMP_Text finalMessage; //si ganaste o perdiste
     public TMP_Text probMessage; //muestra las probabilidades
 
+    public TMP_Text statsText; //texto donde mostramos win/lose
+
     //------mensaje para la apuesta del player------
 
     public TMP_Text creditText; //fichas actuales del jugador
@@ -43,6 +45,8 @@ public class Deck : MonoBehaviour
     int credit = 1000; //credito - fichas
     int currentBet = 10; //por default tiene la apuesta mas baja
     bool roundFinished = false;
+    int wins = 0; //contador de victorias
+    int losses = 0; //contador de derrotas
 
     //-------------------------------------------------------------------------------------------//
 
@@ -56,6 +60,7 @@ public class Deck : MonoBehaviour
         if (resultImage != null)
             resultImage.gameObject.SetActive(false);
 
+        UpdateStatsUI();
         UpdateCreditUI(); //actualiza el credito al inicio de una partida
         UpdateBetFromDropdown(); //aqui leemos la apuesta realizada
         ShuffleCards(); //barajea las cartas
@@ -148,6 +153,8 @@ public class Deck : MonoBehaviour
             {
                 finalMessage.text = "PLAYER BLACKJACK!";
                 credit += currentBet;
+                wins++;
+                UpdateStatsUI();
                 if (resultImage != null)
                 {
                     resultImage.sprite =winSprite;
@@ -171,10 +178,13 @@ public class Deck : MonoBehaviour
                 else
                 {
                     finalMessage.text = "DEALER BLACKJACK!";
+                    losses++;
+                    UpdateStatsUI();
                     if (resultImage != null)
                     {
                         resultImage.sprite =loseSprite;
                         resultImage.gameObject.SetActive(true);
+                        
                     }
                 }
                     
@@ -351,6 +361,8 @@ public class Deck : MonoBehaviour
                 finalMessage.text = "QUEDASTE EN DEUDA";
             else
                 finalMessage.text = "PLAYER LOSE";
+                losses++;
+                UpdateStatsUI();
 
             EndRound();
         }
@@ -378,6 +390,8 @@ public class Deck : MonoBehaviour
         {
             finalMessage.text = "PLAYER WIN";
             credit += currentBet;
+            wins++;
+            UpdateStatsUI();
             if (resultImage != null)
             {
                 resultImage.sprite = winSprite;
@@ -392,6 +406,8 @@ public class Deck : MonoBehaviour
                 finalMessage.text = "PERDISTE MAS CREDITOS DE LOS QUE TENIAS";
             else
                 finalMessage.text = "PLAYER LOSE";
+                losses++;
+                UpdateStatsUI();
 
             if (resultImage != null)
             {
@@ -403,6 +419,8 @@ public class Deck : MonoBehaviour
         {
             finalMessage.text = "PLAYER WIN";
             credit += currentBet;
+            wins++;
+            UpdateStatsUI();
 
             if (resultImage != null)
                 {
@@ -504,6 +522,11 @@ public class Deck : MonoBehaviour
         hitButton.interactable = true;
         stickButton.interactable = true;
 
+        //reset ganadas y perdidas
+        wins = 0;
+        losses = 0;
+        UpdateStatsUI();
+
         //las manos de nuevo con 0 cartas
         player.GetComponent<CardHand>().Clear();
         dealer.GetComponent<CardHand>().Clear();
@@ -532,6 +555,13 @@ public class Deck : MonoBehaviour
         ShuffleCards();
         UpdateBetFromDropdown();
         StartGame();
+    }
+    //------------------------------------------------------//
+    private void UpdateStatsUI()
+    //actualiza el contador de victorias y derrotas
+    {
+        if (statsText != null)
+            statsText.text = "Wins: " + wins + " | Losses: " + losses;
     }
     //------------------------------------------------------//
 
