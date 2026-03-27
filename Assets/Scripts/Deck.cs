@@ -14,6 +14,7 @@ public class Deck : MonoBehaviour
     public Button hitButton; //bton para pedir cartas
     public Button stickButton; //boton para quedarte con las que tienes, luego es el turno del croupier
     public Button playAgainButton; //boton para jugar otra partida
+    public Button resetGameButton; //boton para reiniciar
 
     //------mensajes del juego ------
 
@@ -423,4 +424,49 @@ public class Deck : MonoBehaviour
         }
     }
     //------------------------------------------------------//
+    public void ResetGame()
+    //reinicia todo el juego desde cero y creditos == 1000
+    {
+        //se reinician los creditos
+        credit = 1000;
+
+        //reiniciar variables
+        roundFinished = false;
+        cardIndex = 0;
+
+        //reactivar botones
+        hitButton.interactable = true;
+        stickButton.interactable = true;
+
+        //las manos de nuevo con 0 cartas
+        player.GetComponent<CardHand>().Clear();
+        dealer.GetComponent<CardHand>().Clear();
+
+        //reiniciamos textos
+        if (dealerPointsText != null)
+            dealerPointsText.text = "Puntos: 0";
+
+        if (playerPointsText != null)
+            playerPointsText.text = "Puntos: 0";
+
+        if (finalMessage != null)
+            finalMessage.text = "";
+
+        if (probMessage != null)
+            probMessage.text = "";
+
+        //se actualiza el credito en pantalla
+        UpdateCreditUI();
+
+        //y podemos elegir la apuesta de nuevo
+        if (betDropdown != null)
+            betDropdown.interactable = true;
+
+        //barajamos y empezamos de nuevo
+        ShuffleCards();
+        UpdateBetFromDropdown();
+        StartGame();
+    }
+    //------------------------------------------------------//
+
 }
