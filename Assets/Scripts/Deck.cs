@@ -137,12 +137,22 @@ public class Deck : MonoBehaviour
             if (playerPoints == 21 && dealerPoints == 21)
             {
                 finalMessage.text = "DRAW";
+                if (resultImage != null)
+                {
+                    resultImage.sprite =loseSprite;
+                    resultImage.gameObject.SetActive(true);
+                }
             }
             //si nosotros (el jugador) tiene 21 y ganamos
             else if (playerPoints == 21)
             {
                 finalMessage.text = "PLAYER BLACKJACK!";
                 credit += currentBet;
+                if (resultImage != null)
+                {
+                    resultImage.sprite =winSprite;
+                    resultImage.gameObject.SetActive(true);
+                }
             }
             //si el coupier tiene 21  y gana
             else
@@ -150,9 +160,25 @@ public class Deck : MonoBehaviour
                 credit -= currentBet;
 
                 if (credit < 0)
+                {
                     finalMessage.text = "PERDISTE MAS CREDITOS DE LOS QUE TENIAS";
+                    if (resultImage != null)
+                    {
+                        resultImage.sprite =loseSprite;
+                        resultImage.gameObject.SetActive(true);
+                    }
+                } 
                 else
+                {
                     finalMessage.text = "DEALER BLACKJACK!";
+                    if (resultImage != null)
+                    {
+                        resultImage.sprite =loseSprite;
+                        resultImage.gameObject.SetActive(true);
+                    }
+                }
+                    
+
             }
 
             EndRound(); //se acaba la partida apenas empezo
@@ -377,10 +403,22 @@ public class Deck : MonoBehaviour
         {
             finalMessage.text = "PLAYER WIN";
             credit += currentBet;
+
+            if (resultImage != null)
+                {
+                    resultImage.sprite =winSprite;
+                    resultImage.gameObject.SetActive(true);
+                }
         }
         else
         {
             finalMessage.text = "DRAW";
+
+            if (resultImage != null)
+                {
+                    resultImage.sprite =loseSprite;
+                    resultImage.gameObject.SetActive(true);
+                }
         }
 
 
